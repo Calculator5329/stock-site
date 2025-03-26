@@ -1,0 +1,49 @@
+# ========== General OS/Editor Files ==========
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+
+# ========== Node / Next.js ==========
+node_modules/
+.next/
+.out/
+dist/
+build/
+.npm/
+npm-debug.log*
+yarn-error.log
+pnpm-lock.yaml
+*.log
+
+# Next.js environment files
+.env
+.env.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.test
+.env.test.local
+.next-env.d.ts
+
+# ========== Python ==========
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ========== Data Cache (CSV, etc.) ==========
+backend/data_cache/
+
+# ========== Other ==========
+.vscode/
+.idea/
+*.iml
