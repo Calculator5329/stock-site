@@ -1,50 +1,54 @@
 # 📊 Portfolio Backtester
 
-An interactive web app that lets you simulate and analyze stock portfolio strategies using real historical data. Built with a **FastAPI** backend and **Next.js** frontend, the app lets users test allocations, tweak settings, and view backtest results and portfolio metrics.
+An interactive web app for simulating and analyzing stock portfolio strategies using real historical market data. Users can select custom portfolios, adjust allocations, and view performance metrics — all in a sleek, Netflix-style frontend.
+
+Built with a **FastAPI** backend (containerized with Docker) and a **Next.js** frontend, the app is deployed to the cloud and optimized for speed and usability.
 
 🔗 **Live Site**: [cheery-tiramisu-028ceb.netlify.app](https://cheery-tiramisu-028ceb.netlify.app)
 
 ---
 
-## Features
+## ⚙️ Features
 
-- **Backtest Custom Portfolios**  
-  Choose your stocks, allocation percentages, and see how your portfolio would have performed over time.
+- **Custom Portfolio Backtesting**  
+  Select from a list of **S&P 500 companies**, assign weightings, and simulate performance over time.
 
-- **High-Performance Backend**  
-  Historical data was initially stored as CSVs, but is now optimized using **Pickle** files, which gave a huge speed boost for data loading and computation.
+- **Optimized Data Loading**  
+  Replaced slow CSV files with **Pickle**-based storage, massively reducing data load times.
 
-- **Powerful Data Analysis**  
-  The backend uses **Pandas** and **NumPy** to process the large datasets efficiently.
+- **Backend Analytics Engine**  
+  Uses **Pandas** and **NumPy** for efficient computation and metric generation.
 
 - **Dockerized Backend**  
-  The FastAPI backend is fully containerized with **Docker** for reproducibility and easy deployment.
+  FastAPI is fully containerized with **Docker**, enabling smooth and portable cloud deployment.
 
-- **Cloud Deployed**  
-  - **Backend**: Dockerized FastAPI on **Microsoft Azure App Service**  
-  - **Frontend**: Hosted with **Netlify**
+- **Fully Deployed to the Cloud**  
+  - **Backend**: Azure App Service (Dockerized FastAPI)  
+  - **Frontend**: Netlify (Next.js React app)
 
 ---
 
-## Tech Stack
+## 🛠 Tech Stack
 
 | Layer        | Tech Stack                        |
 |--------------|-----------------------------------|
 | Frontend     | Next.js, React                    |
 | Backend      | FastAPI (Python), Docker          |
-| Data Handling| Pandas, NumPy                     |
-| Deployment   | Azure App Service, Netlify        |
+| Data Tools   | Pandas, NumPy                     |
+| Hosting      | Microsoft Azure, Netlify         |
 
 ---
 
-## Future PLans
+## 🧭 Future Plans
 
-- Add multiple portfolios
-- Add ETFs
-- Add portfolio sub-component performance graphs
-- Add a DCF page
-- Add a Monte Carlo Analysis page
-- Interactive chatbot for portfolio descriptions
-- User accounts and saved portfolios
+New features planned to expand the tool’s depth and interactivity:
 
+- Support for multiple portfolio comparisons
+- Add ETF selections
+- Graphs showing sub-component performance (per stock)
+- Discounted Cash Flow (DCF) valuation page
+- Monte Carlo simulation page
+- Interactive chatbot to describe portfolio styles
+- User accounts with saved portfolios
 
+---
