@@ -154,11 +154,7 @@ export default function Home() {
           className="avatar-link"
         >
           <div className="profile-avatar">
-            <Image
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/profile.png`}
-              alt="Me"
-              fill
-            />
+            <Image src="/profile.png" alt="Me" fill />
           </div>
         </a>
         {/* Top title */}
