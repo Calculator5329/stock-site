@@ -123,7 +123,7 @@ export default function Home() {
     });
 
     const res = await fetch(
-      "http://portfoliobackend5329.azurewebsites.net/portfolio",
+      "https://portfoliobackend5329.azurewebsites.net/portfolio",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
