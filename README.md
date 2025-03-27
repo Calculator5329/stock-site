@@ -1,12 +1,10 @@
-# 📊 Portfolio Backtester
+# Portfolio Backtester
 
 An interactive web app for simulating and analyzing stock portfolio strategies using real historical market data. Users can select custom portfolios, adjust allocations, and view performance metrics — all in a sleek, Netflix-style frontend.
 
 Built with a **FastAPI** backend (containerized with Docker) and a **Next.js** frontend, the app is deployed to the cloud and optimized for speed and usability.
 
 🔗 **Live Site**: [cheery-tiramisu-028ceb.netlify.app](https://cheery-tiramisu-028ceb.netlify.app)
-
----
 
 ## ⚙️ Features
 
@@ -35,14 +33,11 @@ Built with a **FastAPI** backend (containerized with Docker) and a **Next.js** f
 | Frontend     | Next.js, React                    |
 | Backend      | FastAPI (Python), Docker          |
 | Data Tools   | Pandas, NumPy                     |
-| Hosting      | Microsoft Azure, Netlify         |
+| Hosting      | Netlify, Microsoft Azure          |
 
 ---
 
-## 🧭 Future Plans
-
-New features planned to expand the tool’s depth and interactivity:
-
+## Future Plans
 - Support for multiple portfolio comparisons
 - Add ETF selections
 - Graphs showing sub-component performance (per stock)
