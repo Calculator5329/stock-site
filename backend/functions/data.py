@@ -4,53 +4,29 @@ import time
 import os
 import requests
 
-
-# Global cache dictionary
-_data_cache = {}
-
-def preload_ticker_data():
-    global _data_cache
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data_cache"))
-    for filename in os.listdir(base_dir):
-        if filename.endswith(".csv") and filename in ["AAPL.csv", "MSFT.csv", "GOOGL.csv", "META.csv", "AMZN.csv", "TSLA.csv"]:
-            ticker = filename[:-4]  # remove the .csv extension
-            path = os.path.join(base_dir, filename)
-            try:
-                df = pd.read_csv(path)
-                if "Date" not in df.columns:
-                    print(f"Skipping {ticker}—no Date column.")
-                    continue
-                df["Date"] = pd.to_datetime(df["Date"], errors="coerce", utc=True).dt.tz_convert(None)
-                df = df.sort_values("Date").set_index("Date")
-                _data_cache[ticker] = df
-                print(f"Loaded {ticker} into cache.")
-            except Exception as e:
-                print(f"Error loading {ticker}: {e}")
-
 def get_info(ticker, start_date, end_date, prices=True):
-    global _data_cache
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data_cache"))
+    pkl_path = os.path.join(base_dir, f"{ticker}.pkl")
+    csv_path = os.path.join(base_dir, f"{ticker}.csv")
 
-    # If the ticker is already cached, use it; otherwise, read and cache it.
-    if ticker in _data_cache:
-        df = _data_cache[ticker]
-    else:
-        path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", "data_cache", f"{ticker}.csv")
-        )
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"Cached file not found for ticker: {ticker} ({path})")
-
-        df = pd.read_csv(path)
+    if os.path.exists(pkl_path):
+        print(f"Loading {ticker} from pickle...")
+        df = pd.read_pickle(pkl_path)
         if "Date" not in df.columns:
             raise ValueError(f"'Date' column missing in {ticker}. Columns: {df.columns.tolist()}")
-
-        # Parse dates as UTC and then remove timezone info so they're naive
         df["Date"] = pd.to_datetime(df["Date"], errors="coerce", utc=True).dt.tz_convert(None)
         df = df.sort_values("Date").set_index("Date")
+    elif os.path.exists(csv_path):
+        # Fallback: load CSV if pickle doesn't exist.
+        df = pd.read_csv(csv_path)
+        if "Date" not in df.columns:
+            raise ValueError(f"'Date' column missing in {ticker}. Columns: {df.columns.tolist()}")
+        df["Date"] = pd.to_datetime(df["Date"], errors="coerce", utc=True).dt.tz_convert(None)
+        df = df.sort_values("Date").set_index("Date")
+    else:
+        raise FileNotFoundError(f"Cached file not found for ticker: {ticker}")
 
-        _data_cache[ticker] = df  # Cache the full DataFrame for later use
-
-    # Convert input dates to naive datetime objects
+    # Convert input dates to naive datetime objects.
     start_date = pd.to_datetime(start_date, utc=True).tz_convert(None)
     end_date = pd.to_datetime(end_date, utc=True).tz_convert(None)
 
@@ -59,6 +35,7 @@ def get_info(ticker, start_date, end_date, prices=True):
         raise ValueError(f"No data for {ticker} between {start_date} and {end_date}")
 
     return df_slice["Close"] if prices else df_slice
+
    
 
 def plot_tickers_data(ticker_objects, normalize=False):

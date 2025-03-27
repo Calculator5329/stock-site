@@ -8,7 +8,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Or restrict to ["http://localhost:3000"]
+    allow_origins=["https://calculator5329.github.io/portfolio-analyzer", "https://calculator5329.github.io"],  # Or restrict to ["http://localhost:3000"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,6 +21,10 @@ class PortfolioRequest(BaseModel):
     initial: float
     addition: float
     frequency: str  # "weekly", "monthly", or "yearly"
+
+@app.get("/")
+def root():
+    return {"message": "Backend up and running!"}
 
 @app.post("/portfolio")
 def calculate_portfolio(data: PortfolioRequest):

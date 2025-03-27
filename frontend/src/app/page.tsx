@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import React from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import {
@@ -26,39 +27,23 @@ ChartJS.register(
 );
 
 const defaultTickers = [
-  "GOOGL",
   "MSFT",
   "META",
-  "AMZN",
-  "TSLA",
   "AAPL",
-  "DPZ",
-  "COST",
-  "DIS",
-  "JPM",
-  "ENPH",
-  "FICO",
-  "HD",
-  "INTU",
-  "KO",
-  "MA",
-  "MCD",
-  "NKE",
-  "NVDA",
-  "PG",
-  "PYPL",
-  "SBUX",
-  "SHOP",
-  "TGT",
-  "V",
-  "WMT",
-  "ZM",
+  "AMZN",
+  "GOOGL",
+  "TSLA",
+  "NFLX",
 ];
 
 export default function Home() {
-  const [portfolio, setPortfolio] = useState([{ ticker: "MSFT", weight: 100 }]);
-  const [startDate, setStartDate] = useState("2015-01-01");
-  const [endDate, setEndDate] = useState("2024-01-01");
+  const [portfolio, setPortfolio] = useState([
+    { ticker: "META", weight: 33 },
+    { ticker: "AMZN", weight: 33 },
+    { ticker: "GOOGL", weight: 34 },
+  ]);
+  const [startDate, setStartDate] = useState("2020-01-01");
+  const [endDate, setEndDate] = useState("2024-12-31");
   const [initial, setInitial] = useState("1000");
   const [addition, setAddition] = useState("10");
   const [frequency, setFrequency] = useState("monthly");
@@ -80,6 +65,10 @@ export default function Home() {
         tickerContainerRef.current.scrollHeight;
     }
   }, [portfolio]);
+
+  useEffect(() => {
+    submit();
+  }, []);
 
   const updateTicker = (i: number, key: string, value: string | number) => {
     const updated = [...portfolio];
@@ -133,18 +122,21 @@ export default function Home() {
       }
     });
 
-    const res = await fetch("http://192.168.1.241:8000/portfolio", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        portfolio: portfolioDict,
-        start_date: startDate,
-        end_date: endDate,
-        initial: Number(initial), // Convert to number
-        addition: Number(addition), // Convert to number
-        frequency,
-      }),
-    });
+    const res = await fetch(
+      "https://portfolio-backend-wj8j.onrender.com/portfolio",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          portfolio: portfolioDict,
+          start_date: startDate,
+          end_date: endDate,
+          initial: Number(initial), // Convert to number
+          addition: Number(addition), // Convert to number
+          frequency,
+        }),
+      }
+    );
 
     const json = await res.json();
     console.log(json);
@@ -162,7 +154,11 @@ export default function Home() {
           className="avatar-link"
         >
           <div className="profile-avatar">
-            <Image src="/profile.png" alt="Me" fill />
+            <Image
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/profile.png`}
+              alt="Me"
+              fill
+            />
           </div>
         </a>
         {/* Top title */}
@@ -179,6 +175,8 @@ export default function Home() {
               <label>Start Date</label>
               <input
                 type="date"
+                min="1970-01-01"
+                max="2024-12-31"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
@@ -187,6 +185,8 @@ export default function Home() {
               <label>End Date</label>
               <input
                 type="date"
+                min="1970-01-01"
+                max="2024-12-31"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />
@@ -271,17 +271,18 @@ export default function Home() {
                 padding: "1rem",
               }}
             >
-              <select
+              <input
+                list="ticker-options"
                 value={entry.ticker}
                 onChange={(e) => updateTicker(i, "ticker", e.target.value)}
                 className="input-field"
-              >
+                placeholder="Search ticker..."
+              />
+              <datalist id="ticker-options">
                 {defaultTickers.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
+                  <option key={t} value={t} />
                 ))}
-              </select>
+              </datalist>
 
               {/* Wrap the number input and % symbol together */}
               <div style={{ position: "relative", margin: 0, padding: 0 }}>

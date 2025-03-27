@@ -33,18 +33,22 @@ sp500_tickers = [
 
 TICKERS = sp500_tickers
 START_DATE = "1970-01-01"
-END_DATE = "2024-12-31"
+END_DATE = "2025-03-25"
 CACHE_DIR = "data_cache"
 
 os.makedirs(CACHE_DIR, exist_ok=True)
+
+import pickle
 
 for ticker in TICKERS:
     print(f"Downloading {ticker}...")
     try:
         df = yf.Ticker(ticker).history(start=START_DATE, end=END_DATE)
         if not df.empty:
-            # Reset index so the Date becomes a column, then select only the desired columns.
+            # Reset index and select desired columns.
             df = df.reset_index()[["Date", "Close", "Dividends", "Stock Splits"]]
-            df.to_csv(f"{CACHE_DIR}/{ticker}.csv", index=False)
+            # Save as pickle instead of CSV.
+            with open(f"{CACHE_DIR}/{ticker}.pkl", "wb") as f:
+                pickle.dump(df, f)
     except Exception as e:
         print(f"{ticker} failed: {e}")

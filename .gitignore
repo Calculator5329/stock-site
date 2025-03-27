@@ -39,9 +39,8 @@ venv/
 .venv/
 pip-log.txt
 pip-delete-this-directory.txt
+data_cache/
 
-# ========== Data Cache (CSV, etc.) ==========
-backend/data_cache/
 
 # ========== Other ==========
 .vscode/

@@ -1,0 +1,23 @@
+# ========== General OS/Editor Files ==========
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+
+# ========== Python ==========
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ========== Other ==========
+.vscode/
+.idea/
+*.iml
