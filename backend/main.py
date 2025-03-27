@@ -8,7 +8,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://calculator5329.github.io/portfolio-analyzer", "https://calculator5329.github.io"],  # Or restrict to ["http://localhost:3000"]
+    allow_origins=["https://cheery-tiramisu-028ceb.netlify.app/", "https://cheery-tiramisu-028ceb.netlify.app"],  # Or restrict to ["http://localhost:3000"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -5,3 +5,4 @@ matplotlib
 numpy
 uvicorn
 fastapi
+gunicorn

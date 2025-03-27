@@ -1,0 +1,5 @@
+push to cloud
+docker build -t portfolio-backend .
+docker tag portfolio-backend portfoliobackend5329.azurecr.io/portfolio-backend
+docker push portfoliobackend5329.azurecr.io/portfolio-backend
+
