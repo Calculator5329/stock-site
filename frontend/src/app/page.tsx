@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -65,6 +66,7 @@ export default function Home() {
   const [data, setData] = useState<{
     dates: string[];
     portfolio: number[];
+    data: number[];
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -151,14 +153,27 @@ export default function Home() {
   };
 
   return (
-    <main className="p-4">
-      <h1 className="top-title">Portfolio Backtest</h1>
+    <main>
+      <div className="top-bar">
+        <a
+          href="https://Calculator5329.github.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="avatar-link"
+        >
+          <div className="profile-avatar">
+            <Image src="/profile.png" alt="Me" fill />
+          </div>
+        </a>
+        {/* Top title */}
+        <h1 className="top-title">Portfolio Backtest</h1>
+      </div>
 
       {/* Two-column layout for details and ticker selection */}
       <div className="portfolio-container">
         {/* Left Column: Portfolio Details */}
         <div className="portfolio-form">
-          <h2 className="top-title">Portfolio Details</h2>
+          <h2 className="sub-title">Portfolio Options</h2>
           <div className="input-row">
             <div className="form-group">
               <label>Start Date</label>
@@ -243,6 +258,7 @@ export default function Home() {
 
         {/* Right Column: Ticker Selection */}
         <div className="ticker-selection" ref={tickerContainerRef}>
+          <h2 className="sub-title">Portfolio</h2>
           {portfolio.map((entry, i) => (
             <div
               key={i}
@@ -333,64 +349,137 @@ export default function Home() {
           </button>
         </div>
       </div>
+      <div className="output_container">
+        {data && (
+          <div
+            className="mt-6"
+            style={{
+              padding: "1rem",
+              backgroundColor: "#050505",
+              borderRadius: "10px",
+              border: "1px solid #eaeaea",
+              paddingLeft: "5rem",
+              paddingRight: "5rem",
+              height: "640px",
+              width: "70%",
+            }}
+          >
+            <Line
+              data={{
+                labels: data.dates,
+                datasets: [
+                  {
+                    label: "Portfolio Value Over Time",
+                    data: data.portfolio,
+                    fill: false,
+                    borderColor: "rgb(76, 148, 76)",
+                    tension: 0.1,
+                    pointRadius: 0,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { position: "top" },
+                  title: {
+                    display: false,
+                    text: "Portfolio Performance Over Time",
+                  },
+                },
+                scales: {
+                  y: {
+                    grid: {
+                      color: "rgba(255, 255, 255, 0.1)",
+                    },
+                    ticks: {
+                      callback: (value) => "$" + value,
+                    },
+                  },
+                  x: {
+                    grid: {
+                      color: "rgba(255, 255, 255, 0.1)",
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+        )}
 
-      {data && (
-        <div
-          className="mt-6"
-          style={{
-            margin: "2rem",
-            marginLeft: "5rem",
-            marginRight: "5rem",
-            padding: "1rem",
-            backgroundColor: "#050505",
-            borderRadius: "10px",
-            border: "1px solid #eaeaea",
-            paddingLeft: "5rem",
-            paddingRight: "5rem",
-          }}
-        >
-          <Line
-            data={{
-              labels: data.dates,
-              datasets: [
-                {
-                  label: "Portfolio Value Over Time",
-                  data: data.portfolio,
-                  fill: false,
-                  borderColor: "rgb(76, 148, 76)",
-                  tension: 0.1,
-                  pointRadius: 0,
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { position: "top" },
-                title: {
-                  display: false,
-                  text: "Portfolio Performance Over Time",
-                },
-              },
-              scales: {
-                y: {
-                  grid: {
-                    color: "rgba(255, 255, 255, 0.1)",
-                  },
-                  ticks: {
-                    callback: (value) => "$" + value,
-                  },
-                },
-                x: {
-                  grid: {
-                    color: "rgba(255, 255, 255, 0.1)",
-                  },
-                },
-              },
-            }}
-          />
-        </div>
-      )}
+        {data?.data && (
+          <div className="portfolio-detail">
+            <h2
+              style={{
+                margin: 0,
+                padding: "1rem 1.5rem",
+                fontSize: "1.25rem",
+                borderBottom: "1px solid #333",
+                backgroundColor: "#181818",
+              }}
+            >
+              Performance Metrics
+            </h2>
+            <ul
+              style={{
+                listStyle: "none",
+                margin: 0,
+                padding: 0,
+                fontSize: "0.95rem",
+              }}
+            >
+              {[
+                { label: "Initial Value", format: "dollar" },
+                { label: "Ending Value", format: "dollar" },
+                { label: "Total Return", format: "percent" },
+                { label: "CAGR", format: "percent" },
+                { label: "Annualized Std Dev", format: "percent" },
+                { label: "Best Year Return", format: "percent" },
+                { label: "Worst Year Return", format: "percent" },
+                { label: "Maximum Drawdown", format: "percent" },
+                { label: "Sharpe Ratio", format: "number" },
+                { label: "Sortino Ratio", format: "number" },
+                { label: "Total Contributions", format: "dollar" },
+                { label: "MWRR", format: "percent" },
+              ].map(({ label, format }, index) => {
+                const value = data.data[index];
+                let formatted: string;
+
+                if (format === "dollar") {
+                  formatted = `$${Number(value).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`;
+                } else if (format === "percent") {
+                  formatted = isNaN(value)
+                    ? "N/A"
+                    : `${(value * 100).toFixed(2)}%`;
+                } else {
+                  formatted = isNaN(value) ? "N/A" : value.toFixed(4);
+                }
+
+                return (
+                  <li
+                    key={label}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "0.75rem 1.5rem",
+                      backgroundColor: index % 2 === 0 ? "#181818" : "#151515",
+                      borderBottom: "1px solid #222",
+                    }}
+                  >
+                    <span style={{ color: "#aaa" }}>{label}</span>
+                    <span style={{ color: "#eee", fontWeight: 500 }}>
+                      {formatted}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </div>
     </main>
   );
 }

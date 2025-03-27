@@ -132,4 +132,3 @@ def plot_weighted_portfolio_data(ticker_objects):
 
     return data
 
-preload_ticker_data()

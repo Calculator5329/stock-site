@@ -1,35 +1,59 @@
+import pandas as pd
+import matplotlib.pyplot as plt
 from datetime import datetime
-from functions.data import get_info, plot_tickers_data, plot_weighted_portfolio_data, get_latest_common_start
+from classes.portfolio import Portfolio, Ticker
+from functions.portfolio import portfolio_data
+import random
 
-class TickerObject:
-    def __init__(self, ticker, start, end, weight):
-        self.ticker = ticker
-        self.weight = weight
-        self.prices = get_info(ticker, start, end)
+# Settings
+initial = 10000
+annual_return = 0.10
+years = 2
+trading_days_per_year = 252
+total_days = int(years * trading_days_per_year)
+daily_growth = (1 + annual_return) ** (1 / trading_days_per_year)
 
-# Setup test params
-start_date = "2022-01-01"
-end_date = "2023-01-01"
-tickers = [
-    ("AAPL", 0.4),
-    ("MSFT", 0.3),
-    ("GOOGL", 0.3)
+# Generate portfolio values
+dates = pd.bdate_range(start="2020-01-01", periods=total_days)
+values = [100 * (daily_growth ** i) for i in range(total_days)]  # normalized to 100
+dollar_values = [initial * (daily_growth ** i) for i in range(total_days)]  # raw $
+
+# Create Portfolio
+portfolio = Portfolio(values=values, dates=dates)
+
+# Apply contributions: starting with $10,000 and adding $500 monthly
+portfolio.apply_contributions(initial=initial, addition=0, frequency='monthly')
+
+# Calculate portfolio metrics using portfolio_data function
+metrics = portfolio_data(portfolio)
+
+# Define labels for all 12 metrics
+labels = [
+    "Initial Value",
+    "Ending Value",
+    "Total Return",
+    "CAGR",
+    "Annualized Std Dev",
+    "Best Year Return",
+    "Worst Year Return",
+    "Maximum Drawdown",
+    "Sharpe Ratio",
+    "Sortino Ratio",
+    "Total Contributions",
+    "MWRR"
 ]
 
-# Create TickerObject list
-ticker_objects = []
-for symbol, weight in tickers:
-    try:
-        ticker_objects.append(TickerObject(symbol, start_date, end_date, weight))
-    except Exception as e:
-        print(f"Error loading {symbol}: {e}")
+print("Portfolio Metrics:")
+for label, metric in zip(labels, metrics):
+    print(f"{label}: {metric}")
 
-# Run tests
-print("=== Latest Common Start ===")
-print(get_latest_common_start(ticker_objects))
-
-print("\n=== Plot Tickers Data ===")
-print(plot_tickers_data(ticker_objects, normalize=True))
-
-print("\n=== Plot Weighted Portfolio ===")
-print(plot_weighted_portfolio_data(ticker_objects))
+# Optionally, plot the portfolio's dollar values over time
+plt.figure(figsize=(10, 5))
+plt.plot(portfolio.dates, portfolio.dollar_values, label='Portfolio Value')
+plt.xlabel("Date")
+plt.ylabel("Portfolio Value ($)")
+plt.title("Portfolio Growth Over 5 Years (S&P 500-like Performance)")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()

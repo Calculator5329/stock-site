@@ -27,6 +27,8 @@ def calculate_portfolio(data: PortfolioRequest):
     try:
         portfolio_obj = Portfolio.get_portfolio(data.portfolio, data.start_date, data.end_date)
         portfolio_obj.apply_contributions(data.initial, data.addition, data.frequency)
+        portfolio_obj.analyze()
+        print(portfolio_obj.get_json()['data'])
         return portfolio_obj.get_json()
     except Exception as e:
         return {"error": str(e)}
