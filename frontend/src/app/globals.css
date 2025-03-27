@@ -8,14 +8,13 @@
   --primary-hover: #1d4ed8;
   --border-color: #e5e7eb; /* light gray */
   --font-sans: "Roboto", sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #292929;
-    --foreground: #ededed;
-    --border-color: #374151; /* darker gray */
-  }
+  --background: #292929;
+  --foreground: #ededed;
+  --border-color: #374151;
+  --bg-color: #1e1e1e;
+  --text-color: #f0f0f0;
+  --border-color: #555;
+  --input-bg: #2e2e2e;
 }
 
 /* Base Styles */
@@ -221,16 +220,6 @@ input::-webkit-search-results-decoration {
 .submit-btn:disabled {
   background-color: #999;
   cursor: not-allowed;
-}
-
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-color: #1e1e1e;
-    --text-color: #f0f0f0;
-    --border-color: #555;
-    --input-bg: #2e2e2e;
-  }
 }
 
 .portfolio-container {

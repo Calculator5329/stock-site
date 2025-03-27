@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Portfolio Analyzer",
   description: "Portfolio Analyzer App",
   icons: {
-    icon: "/graph1.png", // or .ico
+    icon: "/favicon.ico",
   },
 };
 
