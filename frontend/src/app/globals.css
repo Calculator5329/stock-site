@@ -365,13 +365,14 @@ input[type="number"] {
   border-radius: 50%;
   position: relative;
   top: 50%;
+  transform: scale(1);
   transform: translateY(-50%);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInAvatar 0.6s ease-out both;
 }
 
-.avatar-link:hover {
-  transform: translateY(-50%) scale(1.1);
+.profile-avatar:hover {
+  box-shadow: 0 0 10px #2563eb;
 }
 
 .profile-avatar img {
@@ -399,7 +400,6 @@ input[type="number"] {
   }
   to {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
   }
 }
 
