@@ -15,12 +15,14 @@ class Portfolio:
     @staticmethod
     def get_portfolio(portfolio: dict, start_date: str, end_date: str):
         tickers = []
+        ticker_values = {}
         for ticker, weight in portfolio.items():
             
             df = get_info(ticker, start_date, end_date, prices=False)
 
             series = df['Close'].dropna()
             normalized = (series / series.iloc[0]) * 100
+            ticker_values[ticker] = normalized.tolist()
             weighted = normalized * weight
             tickers.append(weighted)
 
@@ -87,24 +89,30 @@ class Portfolio:
         if len(self.dollar_values) < 2:
             raise ValueError("Not enough data points in portfolio to compute metrics.")
 
-        values = pd.Series(self.dollar_values, index=self.dates)
+        dollar_values = pd.Series(self.dollar_values, index=self.dates)
+        values = pd.Series(self.values, index=self.dates)
+        
+        initial_dollar = dollar_values.iloc[0]
+        ending_dollar = dollar_values.iloc[-1]
+        
         initial = values.iloc[0]
         ending = values.iloc[-1]
+        
         total_return = (ending / initial) - 1
 
-        total_days = (values.index[-1] - values.index[0]).days
+        total_days = (dollar_values.index[-1] - dollar_values.index[0]).days
         years = total_days / 365.25
         CAGR = (ending / initial) ** (1/years) - 1 if years > 0 else np.nan
 
         daily_returns = values.pct_change().dropna()
         annualized_std = daily_returns.std() * np.sqrt(252)
 
-        yearly_returns = values.resample('Y').apply(lambda s: s.iloc[-1] / s.iloc[0] - 1)
+        yearly_returns = values.resample('YE').apply(lambda s: s.iloc[-1] / s.iloc[0] - 1)
         best_year = yearly_returns.max()
         worst_year = yearly_returns.min()
 
-        running_max = values.cummax()
-        drawdown = (values - running_max) / running_max
+        running_max = dollar_values.cummax()
+        drawdown = (dollar_values - running_max) / running_max
         max_drawdown = drawdown.min()
 
         risk_free_rate = 0.02
@@ -120,16 +128,16 @@ class Portfolio:
         if sortino_ratio is not np.nan and sortino_ratio > 1000:
             sortino_ratio = np.nan
 
-        total_contrib = initial
+        total_contrib = initial_dollar
         cashflows = []
-        cf_dates = list(values.index)
+        cf_dates = list(dollar_values.index)
 
         rtol = 1e-4
         atol = 0.01
 
         for i, d in enumerate(cf_dates):
             if i == 0:
-                cashflows.append(-initial)
+                cashflows.append(-initial_dollar)
             else:
                 raw_growth = self.values[i] / self.values[i - 1]
                 expected = self.dollar_values[i - 1] * raw_growth
@@ -140,7 +148,7 @@ class Portfolio:
                 else:
                     cashflows.append(0.0)
 
-        cashflows[-1] += ending
+        cashflows[-1] += ending_dollar
 
         def xnpv(rate, cashflows, dates):
             t0 = dates[0]
@@ -163,8 +171,8 @@ class Portfolio:
         MWRR = xirr(cashflows, cf_dates)
 
         self.data = [
-            round(initial, 2),
-            round(ending, 2),
+            round(initial_dollar, 2),
+            round(ending_dollar, 2),
             round(total_return, 4),
             round(CAGR, 4),
             round(annualized_std, 4),
@@ -173,18 +181,17 @@ class Portfolio:
             round(max_drawdown, 4),
             round(sharpe_ratio, 4),
             round(sortino_ratio, 4),
-            round(total_contrib, 2),
+            round(total_contrib),
             round(MWRR, 4)
         ]
-        
+    
     def get_json(self):
         return {
             "dates": [d.strftime("%Y-%m-%d") for d in self.dates],
             "portfolio": self.dollar_values,
-            "data": self.data
-        }
-        
-
+            "data": self.data,
+            "raw": self.values,
+            }
    
 class Ticker:
     def __init__(self, ticker):

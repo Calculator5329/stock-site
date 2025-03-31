@@ -2,13 +2,16 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Dict
 from classes.portfolio import Portfolio
+from functions.ticker_values import get_ticker_values
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://cheery-tiramisu-028ceb.netlify.app/", "https://cheery-tiramisu-028ceb.netlify.app"],  # Or restrict to ["http://localhost:3000"]
+    # allow_origins=["https://cheery-tiramisu-028ceb.netlify.app/", "https://cheery-tiramisu-028ceb.netlify.app"],  # Or restrict to ["http://localhost:3000"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,6 +24,11 @@ class PortfolioRequest(BaseModel):
     initial: float
     addition: float
     frequency: str  # "weekly", "monthly", or "yearly"
+    
+class TickerChartRequest(BaseModel):
+    tickers: List[str]
+    start_date: str
+    end_date: str
 
 @app.get("/")
 def root():
@@ -36,3 +44,13 @@ def calculate_portfolio(data: PortfolioRequest):
         return portfolio_obj.get_json()
     except Exception as e:
         return {"error": str(e)}
+    
+@app.post("/ticker_chart")
+def ticker_chart(data: TickerChartRequest):
+    try:
+        ticker_vals = get_ticker_values(data.tickers, data.start_date, data.end_date)
+        return ticker_vals
+    except Exception as e:
+        return {"error": str(e)}
+
+
