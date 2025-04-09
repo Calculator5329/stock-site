@@ -164,6 +164,7 @@ export default function Home() {
       }
 
       const json = await res.json();
+      console.log("Portfolio Response JSON:", json);
 
       if (!json || !json.dates || !json.portfolio || !json.raw || !json.data) {
         throw new Error("Received invalid portfolio data.");
