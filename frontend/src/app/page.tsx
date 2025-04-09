@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import React from "react";
-import Image from "next/image";
-
-import TickerChart from "./components/TickerChart";
-import PortfolioChart from "./components/PortfolioChart";
+import PortfolioForm from "./components/PortfolioForm";
+import TopBar from "./components/TopBar";
+import PerformanceMetrics from "./components/PerformanceMetrics";
+import TickerList from "./components/TickerList";
+import PortfolioChartContainer from "./components/PortfolioChartContainer";
+import TickerChartContainer from "./components/TickerChartContainer";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -50,6 +52,19 @@ export default function Home() {
   const [frequency, setFrequency] = useState("monthly");
   const [weightError, setWeightError] = useState("");
   const [secondChart, setSecondChart] = useState<any>(null); // Data for TickerChart
+  const [tickerStats, setTickerStats] = useState<Record<
+    string,
+    number[]
+  > | null>(null);
+  const tickerStatLabels = [
+    "CAGR",
+    "Annualized Std Dev",
+    "Best Year Return",
+    "Worst Year Return",
+    "Maximum Drawdown",
+    "Sharpe Ratio",
+    "Sortino Ratio",
+  ];
   const [data, setData] = useState<{
     // Data for PortfolioChart and metrics
     dates: string[];
@@ -72,7 +87,7 @@ export default function Home() {
     y2Max: number;
   } | null>(null);
 
-  const tickerContainerRef = useRef<HTMLDivElement>(null);
+  const tickerContainerRef = useRef<HTMLDivElement | null>(null);
   const prevPortfolioLength = useRef(portfolio.length);
 
   // Scroll ticker list
@@ -111,28 +126,40 @@ export default function Home() {
       return;
     }
 
+    // "https://portfoliobackend5329.azurewebsites.net/ticker_chart"
+
     try {
-      const res = await fetch(
-        "https://portfoliobackend5329.azurewebsites.net/ticker_chart",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tickers,
-            start_date: startDate, // Use component state for dates
-            end_date: endDate, // Use component state for dates
-          }),
-        }
-      );
+      const res = await fetch("http://localhost:80/ticker_chart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tickers,
+          start_date: startDate, // Use component state for dates
+          end_date: endDate, // Use component state for dates
+        }),
+      });
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const json: Record<string, number[]> = await res.json();
-      // setTickerValues(json); // You might still want this if used elsewhere
-      const chartData = buildSecondChart(json, dates);
+      const json = await res.json();
+      if ("error" in json) {
+        throw new Error(json.error);
+      }
+
+      if ("error" in json) {
+        throw new Error(json.error);
+      }
+
+      console.log("Ticker Chart Data Received:", json);
+
+      // Destructure properly
+      const { tickerVals, tickerStats } = json;
+
+      const chartData = buildSecondChart(tickerVals, dates);
       setSecondChart(chartData);
+      setTickerStats(tickerStats);
     } catch (error) {
       console.error("Failed to fetch ticker chart:", error);
       setSecondChart(null); // Clear chart on error
@@ -301,22 +328,21 @@ export default function Home() {
       return;
     }
 
+    // "https://portfoliobackend5329.azurewebsites.net/portfolio"
+
     try {
-      const res = await fetch(
-        "https://portfoliobackend5329.azurewebsites.net/portfolio",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            portfolio: portfolioDict,
-            start_date: startDate,
-            end_date: endDate,
-            initial: Number(initial) || 0, // Default to 0 if empty/invalid
-            addition: Number(addition) || 0, // Default to 0 if empty/invalid
-            frequency,
-          }),
-        }
-      );
+      const res = await fetch("http://localhost:80/portfolio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          portfolio: portfolioDict,
+          start_date: startDate,
+          end_date: endDate,
+          initial: Number(initial) || 0, // Default to 0 if empty/invalid
+          addition: Number(addition) || 0, // Default to 0 if empty/invalid
+          frequency,
+        }),
+      });
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -355,368 +381,55 @@ export default function Home() {
 
   return (
     <main>
-      {/* ... (Top Bar JSX remains the same) ... */}
-      <div className="top-bar">
-        <a
-          href="https://Calculator5329.github.io"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="avatar-link"
-        >
-          <div className="profile-avatar">
-            <Image src="/profile.png" alt="Me" fill />
-          </div>
-        </a>
-        <h1 className="top-title">Portfolio Backtest</h1>
-      </div>
+      <TopBar />
 
       {/* ... (Portfolio Container JSX remains the same, but use handleSubmitClick for the button) ... */}
       <div className="portfolio-container">
         {/* Left Column: Portfolio Details */}
-        <div className="portfolio-form">
-          <h2 className="sub-title">Portfolio Options</h2>
-          <div className="input-row">
-            {/* Start Date */}
-            <div className="form-group">
-              <label>Start Date</label>
-              <input
-                type="date"
-                min="1970-01-01"
-                max="2024-12-31" // Consider making max dynamic or removing it
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            {/* End Date */}
-            <div className="form-group">
-              <label>End Date</label>
-              <input
-                type="date"
-                min="1970-01-01"
-                max="2024-12-31" // Consider making max dynamic or removing it
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-            {/* Initial Investment */}
-            <div className="form-group">
-              <label>Initial Investment ($)</label>
-              <input
-                type="number"
-                min={0}
-                max={10000000}
-                value={initial}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  // Allow empty string, otherwise validate and clamp
-                  if (val === "") {
-                    setInitial("");
-                  } else {
-                    let num = parseFloat(val);
-                    if (!isNaN(num)) {
-                      num = Math.max(0, Math.min(10000000, num));
-                      setInitial(num.toString());
-                    } else {
-                      // Handle case where input becomes non-numeric temporarily
-                      // Maybe set to "0" or keep the previous valid value?
-                      // For now, setting to empty allows correction.
-                      setInitial("");
-                    }
-                  }
-                }}
-                placeholder="(e.g. 1000)"
-              />
-            </div>
-            {/* Recurring Amount */}
-            <div className="form-group">
-              <label>Recurring Amount ($)</label>
-              <input
-                type="number"
-                min={0}
-                max={10000000}
-                value={addition}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") {
-                    setAddition("");
-                  } else {
-                    let num = parseFloat(val);
-                    if (!isNaN(num)) {
-                      num = Math.max(0, Math.min(10000000, num));
-                      setAddition(num.toString());
-                    } else {
-                      setAddition("");
-                    }
-                  }
-                }}
-                placeholder="(e.g. 100)"
-              />
-            </div>
-            {/* Frequency */}
-            <div className="form-group">
-              <label>Frequency</label>
-              <select
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value)}
-              >
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-          </div>
-          {/* Submit Button */}
-          <button
-            onClick={handleSubmitClick}
-            className="submit-btn"
-            disabled={loadingPortfolio || loadingTickers}
-          >
-            {loadingPortfolio
-              ? "Loading Portfolio..."
-              : loadingTickers
-              ? "Loading Tickers..."
-              : "Submit"}
-          </button>
-          {weightError && (
-            <p
-              style={{ color: "red", marginTop: "1rem", fontSize: "0.875rem" }}
-            >
-              {weightError}
-            </p>
-          )}
-        </div>
+        <PortfolioForm
+          startDate={startDate}
+          endDate={endDate}
+          initial={initial}
+          addition={addition}
+          frequency={frequency}
+          weightError={weightError}
+          loadingPortfolio={loadingPortfolio}
+          loadingTickers={loadingTickers}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+          setInitial={setInitial}
+          setAddition={setAddition}
+          setFrequency={setFrequency}
+          onSubmit={handleSubmitClick}
+        />
 
         {/* Right Column: Ticker Selection */}
-        <div className="ticker-selection" ref={tickerContainerRef}>
-          <h2 className="sub-title">Portfolio</h2>
-          {portfolio.map((entry, i) => (
-            <div
-              key={i}
-              className="form-group"
-              style={{
-                display: "flex",
-                gap: "1.5rem",
-                marginBottom: "0.5rem",
-                borderRadius: "10px",
-                padding: "1rem",
-              }}
-            >
-              <input
-                list="ticker-options"
-                value={entry.ticker}
-                onChange={(e) => updateTicker(i, "ticker", e.target.value)}
-                className="input-field"
-                placeholder="Search ticker..."
-              />
-              <datalist id="ticker-options">
-                {defaultTickers.map((t) => (
-                  <option key={t} value={t} />
-                ))}
-              </datalist>
-
-              {/* Wrap the number input and % symbol together */}
-              <div style={{ position: "relative", margin: 0, padding: 0 }}>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={entry.weight}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    if (isNaN(value)) {
-                      updateTicker(i, "weight", 0);
-                    } else {
-                      updateTicker(
-                        i,
-                        "weight",
-                        Math.max(0, Math.min(100, value))
-                      );
-                    }
-                  }}
-                  className="input-field"
-                  style={{ paddingRight: "2rem", margin: 0 }}
-                  placeholder="%"
-                />
-                <span
-                  style={{
-                    position: "absolute",
-                    right: "0.5rem",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    pointerEvents: "none",
-                    color: "#999",
-                  }}
-                >
-                  %
-                </span>
-              </div>
-              {/* Only show the remove button if more than one ticker */}
-              {portfolio.length > 1 && (
-                <button
-                  onClick={() => removeTicker(i)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                    margin: 0,
-                    fontSize: "1.5rem",
-                    pointerEvents: "auto",
-                  }}
-                  aria-label="Remove ticker"
-                >
-                  🗑️
-                </button>
-              )}
-            </div>
-          ))}
-          {weightError && (
-            <p style={{ color: "red", margin: 0, fontSize: "0.875rem" }}>
-              {weightError}
-            </p>
-          )}
-          <button onClick={addTicker} className="submit-btn">
-            Add Ticker
-          </button>
-        </div>
+        <TickerList
+          portfolio={portfolio}
+          defaultTickers={defaultTickers}
+          tickerContainerRef={tickerContainerRef}
+          updateTicker={updateTicker}
+          addTicker={addTicker}
+          removeTicker={removeTicker}
+          weightError={weightError}
+        />
       </div>
 
       {/* Output Container */}
       <div className="output_container">
-        <div
-          className="mt-6 chart-wrapper"
-          style={{
-            padding: "1rem",
-            backgroundColor: "#050505",
-            borderRadius: "10px",
-            border: "1px solid #333",
-            height: "640px",
-            width: "calc(70% - 1rem)",
-            marginRight: "1rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {data && !loadingPortfolio ? (
-            <PortfolioChart
-              chartData={{
-                labels: data.dates,
-                datasets: [
-                  {
-                    label: "Portfolio Value",
-                    data: data.portfolio,
-                    borderColor: "rgb(76, 148, 76)",
-                    pointRadius: 0,
-                    tension: 0.1,
-                    fill: false,
-                    yAxisID: "y1",
-                  },
-                  {
-                    label: "Growth of Initial Investment",
-                    data: data.raw,
-                    borderColor: "rgb(116, 116, 116)",
-                    pointRadius: 0,
-                    tension: 0.1,
-                    fill: false,
-                    yAxisID: "y2",
-                  },
-                ],
-              }}
-              syncedScales={syncedScales}
-            />
-          ) : null}
-        </div>
+        <PortfolioChartContainer
+          labels={data?.dates ?? []}
+          portfolio={data?.portfolio ?? []}
+          raw={data?.raw ?? []}
+          syncedScales={syncedScales}
+          loading={loadingPortfolio}
+        />
 
         {/* Performance Metrics Section */}
-        <div
-          className="portfolio-detail"
-          style={{
-            width: "calc(30% - 1rem)",
-            backgroundColor: "#101010",
-            borderRadius: "10px",
-            border: "1px solid #333",
-            overflow: "hidden",
-            height: "640px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <h2
-            style={{
-              margin: 0,
-              padding: "1rem 1.5rem",
-              fontSize: "1.1rem",
-              borderBottom: "1px solid #333",
-              backgroundColor: "#181818",
-              color: "#eee",
-              flexShrink: 0,
-            }}
-          >
-            Performance Metrics
-          </h2>
-          <ul
-            style={{
-              listStyle: "none",
-              margin: 0,
-              padding: 0,
-              fontSize: "0.9rem",
-              overflowY: "auto",
-              flexGrow: 1,
-            }}
-          >
-            {[
-              { label: "Initial Value", format: "dollar" },
-              { label: "Ending Value", format: "dollar" },
-              { label: "Total Return", format: "percent" },
-              { label: "CAGR", format: "percent" },
-              { label: "Annualized Std Dev", format: "percent" },
-              { label: "Best Year Return", format: "percent" },
-              { label: "Worst Year Return", format: "percent" },
-              { label: "Maximum Drawdown", format: "percent" },
-              { label: "Sharpe Ratio", format: "number", digits: 2 },
-              { label: "Sortino Ratio", format: "number", digits: 2 },
-              { label: "Total Contributions", format: "dollar" },
-              { label: "MWRR", format: "percent" },
-            ].map(({ label, format, digits = 2 }, index) => {
-              const value = data?.data?.[index];
-              let formatted: string;
-
-              if (value === null || value === undefined || loadingPortfolio) {
-                formatted = "—";
-              } else if (format === "dollar") {
-                formatted = `$${Number(value).toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`;
-              } else if (format === "percent") {
-                formatted = isNaN(value)
-                  ? "—"
-                  : `${(Number(value) * 100).toFixed(digits)}%`;
-              } else {
-                formatted = isNaN(value) ? "—" : Number(value).toFixed(digits);
-              }
-
-              return (
-                <li
-                  key={label}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "0.6rem 1.5rem",
-                    backgroundColor: index % 2 === 0 ? "#181818" : "#151515",
-                    borderBottom: "1px solid #282828",
-                  }}
-                >
-                  <span style={{ color: "#aaa" }}>{label}</span>
-                  <span style={{ color: "#eee", fontWeight: 500 }}>
-                    {formatted}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <PerformanceMetrics
+          metrics={data?.data ?? null}
+          loading={loadingPortfolio}
+        />
       </div>
 
       {/* Second Chart Container (appears below the first row) */}
@@ -725,43 +438,112 @@ export default function Home() {
         className="output_container ticker-chart-container"
         style={{ marginTop: "2rem" }}
       >
-        <div
-          className="mt-6 chart-wrapper"
-          style={{
-            padding: "1rem",
-            backgroundColor: "#050505",
-            borderRadius: "10px",
-            border: "1px solid #333",
-            height: "500px",
-            width: "fit-content",
-            display: "flex",
-            alignItems: "left",
-            justifyContent: "left",
-          }}
-        >
-          {secondChart && !loadingTickers ? (
-            <TickerChart chartData={secondChart} />
-          ) : null}
-        </div>
+        <TickerChartContainer
+          chartData={secondChart}
+          loading={loadingTickers}
+        />
+
         <div
           className="portfolio-detail"
           style={{
             backgroundColor: "#101010",
             borderRadius: "10px",
             border: "1px solid #333",
-            overflow: "hidden",
+            overflow: "auto",
             display: "flex",
             flexDirection: "column",
-            height: "515px",
+            height: "500px",
+            padding: "1rem",
+            width: "40%",
           }}
         >
-          <h1 style={{ paddingLeft: "15px" }}>
-            Working on adding this section!
-          </h1>
-          <p style={{ paddingLeft: "15px" }}>
-            This section will likely contain metrics such as Individual Stock
-            Performance, Sharpe/Sortino Ratios, Drawdowns, and others.
-          </p>
+          <h2 style={{ marginBottom: "1rem", color: "#eee" }}>
+            Ticker Metrics
+          </h2>
+          <table
+            style={{
+              width: "100%",
+              color: "#ccc",
+              fontSize: "0.9rem",
+              borderCollapse: "collapse",
+              border: "1px solid #444", // Outer border
+            }}
+          >
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "0.5rem",
+                    border: "1px solid #444",
+                    backgroundColor: "#181818",
+                  }}
+                >
+                  Ticker
+                </th>
+                {tickerStatLabels.map((label) => (
+                  <th
+                    key={label}
+                    style={{
+                      textAlign: "right",
+                      padding: "0.5rem",
+                      border: "1px solid #444",
+                      backgroundColor: "#181818",
+                    }}
+                  >
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tickerStats &&
+                Object.entries(tickerStats).map(([ticker, stats]) => (
+                  <tr key={ticker}>
+                    <td
+                      style={{
+                        fontWeight: 500,
+                        padding: "0.5rem",
+                        border: "1px solid #333",
+                      }}
+                    >
+                      {ticker}
+                    </td>
+                    {stats.map((val, i) => {
+                      let formatted: string;
+                      const format = tickerStatLabels[i].includes("Value")
+                        ? "dollar"
+                        : tickerStatLabels[i].includes("Ratio")
+                        ? "number"
+                        : "percent";
+
+                      if (val === null || val === undefined || isNaN(val)) {
+                        formatted = "—";
+                      } else if (format === "dollar") {
+                        formatted = `$${val.toFixed(2)}`;
+                      } else if (format === "percent") {
+                        formatted = `${(val * 100).toFixed(2)}%`;
+                      } else {
+                        formatted = val.toFixed(2);
+                      }
+
+                      return (
+                        <td
+                          key={i}
+                          style={{
+                            textAlign: "right",
+                            padding: "0.5rem",
+                            border: "1px solid #333",
+                          }}
+                        >
+                          {formatted}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </main>

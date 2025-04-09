@@ -1,8 +1,9 @@
 from fastapi import FastAPI
+from matplotlib import ticker
 from pydantic import BaseModel
 from typing import Dict
 from classes.portfolio import Portfolio
-from functions.ticker_values import get_ticker_values
+from functions.ticker_values import get_ticker_values, get_stats
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 
@@ -49,7 +50,13 @@ def calculate_portfolio(data: PortfolioRequest):
 def ticker_chart(data: TickerChartRequest):
     try:
         ticker_vals = get_ticker_values(data.tickers, data.start_date, data.end_date)
-        return ticker_vals
+        print(ticker_vals)
+        ticker_stats = get_stats(ticker_vals, data.start_date, data.end_date)
+        return {
+    "tickerVals": ticker_vals,
+    "tickerStats": ticker_stats
+}
+
     except Exception as e:
         return {"error": str(e)}
 
