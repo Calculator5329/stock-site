@@ -10,8 +10,6 @@ import PerformanceMetrics from "./components/PerformanceMetrics";
 import TickerMetricsTable from "./components/TickerMetricsTable";
 import { ChartData } from "chart.js";
 
-const backURL = "https://portfoliobackend5329.azurewebsites.net";
-
 const defaultTickers = [
   "MSFT",
   "META",
@@ -145,18 +143,21 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch(`${backURL}/portfolio`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          portfolio: portfolioDict,
-          start_date: startDate,
-          end_date: endDate,
-          initial: Number(initial) || 0,
-          addition: Number(addition) || 0,
-          frequency,
-        }),
-      });
+      const res = await fetch(
+        "https://portfoliobackend5329.azurewebsites.net/portfolio",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            portfolio: portfolioDict,
+            start_date: startDate,
+            end_date: endDate,
+            initial: Number(initial) || 0,
+            addition: Number(addition) || 0,
+            frequency,
+          }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -191,15 +192,18 @@ export default function Home() {
 
     const tickers = portfolio.map((p) => p.ticker).filter(Boolean);
     try {
-      const res = await fetch(`${backURL}/ticker_chart`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tickers,
-          start_date: startDate,
-          end_date: endDate,
-        }),
-      });
+      const res = await fetch(
+        "https://portfoliobackend5329.azurewebsites.net/ticker_chart",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tickers,
+            start_date: startDate,
+            end_date: endDate,
+          }),
+        }
+      );
 
       const json = await res.json();
       setSecondChart(buildSecondChart(json.tickerVals, dates));
