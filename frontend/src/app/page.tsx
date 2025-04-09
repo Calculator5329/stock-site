@@ -10,7 +10,7 @@ import PerformanceMetrics from "./components/PerformanceMetrics";
 import TickerMetricsTable from "./components/TickerMetricsTable";
 import { ChartData } from "chart.js";
 
-const backURL = "http://localhost:80";
+const backURL = "https://portfoliobackend5329.azurewebsites.net";
 
 const defaultTickers = [
   "MSFT",

@@ -1,7 +1,7 @@
 // hooks/usePortfolioData.ts
 import { useEffect } from "react";
 
-const backURL = "http://localhost:80";
+const backURL = "https://portfoliobackend5329.azurewebsites.net";
 
 interface PortfolioEntry {
   ticker: string;
