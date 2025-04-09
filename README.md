@@ -1,6 +1,6 @@
 # Portfolio Backtester
 
-An interactive web app for simulating and analyzing stock portfolio strategies using real historical market data. Users can select custom portfolios, adjust allocations, and view performance metrics — all in a sleek, Netflix-style frontend.
+An interactive web app for simulating and analyzing stock portfolio strategies using real historical market data. Users can select custom portfolios, adjust allocations, and view performance metrics.
 
 Built with a **FastAPI** backend (containerized with Docker) and a **Next.js** frontend, the app is deployed to the cloud and optimized for speed and usability.
 
