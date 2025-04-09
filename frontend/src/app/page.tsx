@@ -8,6 +8,9 @@ import PortfolioChartContainer from "./components/PortfolioChartContainer";
 import TickerChartContainer from "./components/TickerChartContainer";
 import PerformanceMetrics from "./components/PerformanceMetrics";
 import TickerMetricsTable from "./components/TickerMetricsTable";
+import { ChartData } from "chart.js";
+
+const backURL = "http://localhost:80";
 
 const defaultTickers = [
   "MSFT",
@@ -40,8 +43,19 @@ export default function Home() {
   const [addition, setAddition] = useState("10");
   const [frequency, setFrequency] = useState("monthly");
   const [weightError, setWeightError] = useState("");
-  const [data, setData] = useState<any>(null);
-  const [secondChart, setSecondChart] = useState<any>(null);
+
+  interface PortfolioData {
+    dates: string[];
+    portfolio: number[];
+    raw: number[];
+    data: number[];
+    ticker_values?: Record<string, number[]>;
+  }
+  const [data, setData] = useState<PortfolioData | null>(null);
+  const [secondChart, setSecondChart] = useState<ChartData<"line"> | null>(
+    null
+  );
+
   const [tickerStats, setTickerStats] = useState<Record<
     string,
     number[]
@@ -131,21 +145,18 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch(
-        "https://portfoliobackend5329.azurewebsites.net/portfolio",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            portfolio: portfolioDict,
-            start_date: startDate,
-            end_date: endDate,
-            initial: Number(initial) || 0,
-            addition: Number(addition) || 0,
-            frequency,
-          }),
-        }
-      );
+      const res = await fetch(`${backURL}/portfolio`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          portfolio: portfolioDict,
+          start_date: startDate,
+          end_date: endDate,
+          initial: Number(initial) || 0,
+          addition: Number(addition) || 0,
+          frequency,
+        }),
+      });
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -180,18 +191,15 @@ export default function Home() {
 
     const tickers = portfolio.map((p) => p.ticker).filter(Boolean);
     try {
-      const res = await fetch(
-        "https://portfoliobackend5329.azurewebsites.net/ticker_chart",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tickers,
-            start_date: startDate,
-            end_date: endDate,
-          }),
-        }
-      );
+      const res = await fetch(`${backURL}/ticker_chart`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tickers,
+          start_date: startDate,
+          end_date: endDate,
+        }),
+      });
 
       const json = await res.json();
       setSecondChart(buildSecondChart(json.tickerVals, dates));
@@ -310,7 +318,6 @@ export default function Home() {
         <TickerMetricsTable
           tickerStats={tickerStats}
           tickerStatLabels={tickerStatLabels}
-          loading={loadingTickers}
         />
       </div>
     </main>

@@ -1,6 +1,8 @@
 // hooks/usePortfolioData.ts
 import { useEffect } from "react";
 
+const backURL = "http://localhost:80";
+
 interface PortfolioEntry {
   ticker: string;
   weight: number;
@@ -45,21 +47,18 @@ export const usePortfolioData = (
       });
 
       try {
-        const res = await fetch(
-          "https://portfoliobackend5329.azurewebsites.net/portfolio",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              portfolio: portfolioDict,
-              start_date: startDate,
-              end_date: endDate,
-              initial: Number(initial) || 0,
-              addition: Number(addition) || 0,
-              frequency,
-            }),
-          }
-        );
+        const res = await fetch(`${backURL}/portfolio`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            portfolio: portfolioDict,
+            start_date: startDate,
+            end_date: endDate,
+            initial: Number(initial) || 0,
+            addition: Number(addition) || 0,
+            frequency,
+          }),
+        });
 
         if (!res.ok) throw new Error(`Status ${res.status}`);
 
@@ -69,14 +68,26 @@ export const usePortfolioData = (
         }
 
         onSuccess(json);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Portfolio fetch error:", err);
-        onError(err.message);
-      } finally {
-        setLoading(false);
+        if (err instanceof Error) {
+          onError(err.message);
+        } else {
+          onError(String(err));
+        }
       }
     };
 
     fetchPortfolioData();
-  }, [portfolio, startDate, endDate, initial, addition, frequency]);
+  }, [
+    portfolio,
+    startDate,
+    endDate,
+    initial,
+    addition,
+    frequency,
+    onError,
+    onSuccess,
+    setLoading,
+  ]);
 };

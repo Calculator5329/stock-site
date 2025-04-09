@@ -1,25 +1,9 @@
-// components/TickerChart.tsx
 import React from "react";
 import { Line } from "react-chartjs-2";
-import { ChartOptions } from "chart.js";
-
-interface ChartDataset {
-  label: string;
-  data: number[];
-  borderColor?: string;
-  backgroundColor?: string;
-  fill?: boolean;
-  tension?: number;
-  pointRadius?: number;
-}
-
-interface ChartData {
-  labels: string[];
-  datasets: ChartDataset[];
-}
+import { ChartData, ChartOptions } from "chart.js";
 
 interface TickerChartProps {
-  chartData: ChartData;
+  chartData: ChartData<"line">;
 }
 
 const TickerChartComponent: React.FC<TickerChartProps> = ({ chartData }) => {

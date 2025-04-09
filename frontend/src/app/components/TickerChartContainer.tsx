@@ -1,9 +1,11 @@
 // components/TickerChartContainer.tsx
 import React from "react";
 import TickerChart from "./TickerChart";
+import { ChartData } from "chart.js";
 
+// Removed unused TickerChartProps interface
 interface Props {
-  chartData: any;
+  chartData: ChartData<"line"> | null;
   loading: boolean;
 }
 

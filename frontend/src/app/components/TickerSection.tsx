@@ -1,8 +1,9 @@
 import React from "react";
 import TickerChartContainer from "./TickerChartContainer";
+import { ChartData } from "chart.js";
 
 interface Props {
-  chartData: any;
+  chartData: ChartData<"line"> | null;
   loading: boolean;
   tickerStats: Record<string, number[]> | null;
   tickerStatLabels: string[];
