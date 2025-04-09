@@ -438,3 +438,53 @@ input[type="number"] {
   overflow-y: hidden;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
 }
+.ticker-metrics-container {
+  flex: 1;
+  min-width: 300px;
+  max-width: 800px;
+  background-color: #101010;
+  border-radius: 10px;
+  border: 1px solid #333;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  padding: 1rem;
+  margin-left: auto; /* Align to the right */
+}
+
+.ticker-metrics-title {
+  margin-bottom: 1rem;
+  margin-left: 0.25rem;
+  color: #eee;
+}
+
+.ticker-metrics-table {
+  width: 100%;
+  color: #ccc;
+  font-size: 0.9rem;
+  border-collapse: collapse;
+  border: 1px solid #444;
+}
+
+.ticker-metrics-table th,
+.ticker-metrics-table td {
+  padding: 0.5rem;
+  border: 1px solid #333;
+  text-align: center;
+  background-color: #181818;
+}
+
+.ticker-metrics-table th {
+  text-align: center;
+}
+
+.ticker-label {
+  font-weight: 500;
+  text-align: left;
+  background-color: #101010;
+}
+.chart-wrapper {
+  flex: 2;
+  min-width: 400px;
+}

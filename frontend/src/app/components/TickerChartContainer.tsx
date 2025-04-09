@@ -23,6 +23,7 @@ const TickerChartContainer: React.FC<Props> = ({ chartData, loading }) => {
         display: "flex",
         alignItems: "left",
         justifyContent: "left",
+        maxWidth: "1000px",
       }}
     >
       <TickerChart chartData={chartData} />
